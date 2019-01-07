@@ -27,6 +27,7 @@ Creates a rule to block auto-forwarding rules from inside organization to extern
 Set-TransportRuleBlockClientRuleForwarding.ps1
 #>
 
+function Connect-EXOnline {
 # Connect to EXonline using Microsoft Exchange Online Powershell Module
 $CreateEXOPSSession = (Get-ChildItem -Path $env:userprofile -Filter CreateExoPSSession.ps1 -Recurse -ErrorAction SilentlyContinue -Force | Select -Last 1).DirectoryName
 . "$CreateEXOPSSession\CreateExoPSSession.ps1"
@@ -35,6 +36,9 @@ $CreateEXOPSSession = (Get-ChildItem -Path $env:userprofile -Filter CreateExoPSS
 Write-Host "Connecting to Office 365 Session with Modern Auth - MFA"
 $AdminCred = Read-Host -Prompt "Specify Global Administrator Username"
 Connect-EXOPSSession -UserPrincipalName $AdminCred 
+}
+
+Connect-EXOnline
 
 # Transport rule variables
 $externalTransportRuleName = "Client Rules Forwarding Block"
@@ -46,3 +50,6 @@ if (!$externalForwardRule) {
     Write-Output "Client Rules To External Block not found, creating Rule"
     New-TransportRule -name "Client Rules Forwarding Block" -Priority 0 -SentToScope NotInOrganization -FromScope InOrganization -MessageTypeMatches AutoForward -RejectMessageEnhancedStatusCode 5.7.1 -RejectMessageReasonText $rejectMessageText
 }
+    else {
+        Write-Output "$externalTransportRuleName exist"
+    }
