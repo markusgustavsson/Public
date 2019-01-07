@@ -13,6 +13,7 @@ Date: 07/01/2019
 
 TODO:
 - Improve connect to EXOnline to better support MFA and non MFA logins
+- Try module exist, install if it does not
 - https://cmdletpswmodule.blob.core.windows.net/exopsmodule/Microsoft.Online.CSE.PSModule.Client.application
 #>
 
