@@ -30,7 +30,7 @@ Set-TransportRuleBlockClientRuleForwarding.ps1
 
 function Connect-EXOnline {
 # Connect to EXonline using Microsoft Exchange Online Powershell Module
-$CreateEXOPSSession = (Get-ChildItem -Path $env:userprofile -Filter CreateExoPSSession.ps1 -Recurse -ErrorAction SilentlyContinue -Force | Select -Last 1).DirectoryName
+$CreateEXOPSSession = (Get-ChildItem -Path $env:userprofile -Filter CreateExoPSSession.ps1 -Recurse -ErrorAction SilentlyContinue -Force | Select-Object -Last 1).DirectoryName
 . "$CreateEXOPSSession\CreateExoPSSession.ps1"
 
 # Get Admin credentials and sign in to EXOnline with Modern Auth - MFA
