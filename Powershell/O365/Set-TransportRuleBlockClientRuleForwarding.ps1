@@ -8,11 +8,12 @@ IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR
 PURPOSE. THE ENTIRE RISK OF USE, INABILITY TO USE, OR RESULTS FROM THE USE OF 
 THIS CODE REMAINS WITH THE USER.
 
-Author: ChrisC
+Author: ChrisC-NZ
 Date: 07/01/2019
 
 TODO:
 - Improve connect to EXOnline to better support MFA and non MFA logins
+- Try module exist, install if it does not
 - https://cmdletpswmodule.blob.core.windows.net/exopsmodule/Microsoft.Online.CSE.PSModule.Client.application
 #>
 
