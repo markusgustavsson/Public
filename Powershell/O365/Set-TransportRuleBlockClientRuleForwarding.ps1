@@ -12,9 +12,7 @@ Author: ChrisC-NZ
 Date: 07/01/2019
 
 TODO:
-- Improve connect to EXOnline to better support MFA and non MFA logins
-- Try module exist, install if it does not
-- https://cmdletpswmodule.blob.core.windows.net/exopsmodule/Microsoft.Online.CSE.PSModule.Client.application
+
 #>
 
 <#
@@ -28,28 +26,52 @@ Creates a rule to block auto-forwarding rules from inside organization to extern
 Set-TransportRuleBlockClientRuleForwarding.ps1
 #>
 
-function Connect-EXOnline {
-# Connect to EXonline using Microsoft Exchange Online Powershell Module
-$CreateEXOPSSession = (Get-ChildItem -Path $env:userprofile -Filter CreateExoPSSession.ps1 -Recurse -ErrorAction SilentlyContinue -Force | Select-Object -Last 1).DirectoryName
-. "$CreateEXOPSSession\CreateExoPSSession.ps1"
+###################################
+#     CONNECT EXCHANGE ONLINE     #
+###################################
 
-# Get Admin credentials and sign in to EXOnline with Modern Auth - MFA
-Write-Host "Connecting to Office 365 Session w/ MFA"
-Connect-EXOPSSession
+#Set to $True if your global admin requires MFA
+$2FA = [System.Windows.Forms.MessageBox]::Show("Does your Global Admin require MFA?" , "MFA" , 4)
+
+###################################
+If ($2FA -eq "No")
+{
+    $credential = Get-Credential -Message "Please enter your Office 365 credentials"
+    Import-Module AzureAD
+    Connect-AzureAD -Credential $credential
+    $exchangeSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/"  -Authentication "Basic" -AllowRedirection -Credential $credential
+    Import-PSSession $exchangeSession -AllowClobber
+}
+Else
+{
+    $Modules = ((Get-ChildItem -Path $($env:LOCALAPPDATA + "\Apps\2.0\") -Filter CreateExoPSSession.ps1 -Recurse).FullName | Where-Object{ $_ -notmatch "_none_" } | Select-Object -First 1)
+    If ($Modules -eq $Null)
+		{
+            Write-Host "Exchange Online MFA Module was not found, please make sure you have downloaded and installed it from your tenant https://docs.microsoft.com/en-us/powershell/exchange/exchange-online/connect-to-exchange-online-powershell/mfa-connect-to-exchange-online-powershell?view=exchange-ps" -ForegroundColor Red
+            Exit
+		}
+    foreach ($Module in $Modules)
+        {
+           Import-Module "$Module"
+        }
+    Write-Host "Credential prompt to connect to Exchange Online" -ForegroundColor Yellow
+    #Connect to Exchange Online w/ MFA
+    Connect-EXOPSSession
 }
 
-Connect-EXOnline
+###################################
+#         TRANSPORT RULES         #
+###################################
 
-# Transport rule variables
 $externalTransportRuleName = "Client Rules Forwarding Block"
 $rejectMessageText = "To improve security, auto-forwarding rules to external addresses has been disabled. Please contact your Microsoft Partner if you'd like to set up an exception."
 $externalForwardRule = Get-TransportRule | Where-Object {$_.Identity -contains $externalTransportRuleName}
 
 # Create transport rule if it does not exist with matching name
 if (!$externalForwardRule) {
-    Write-Output "Client Rules To External Block not found, creating Rule"
-    New-TransportRule -name "Client Rules Forwarding Block" -Priority 0 -SentToScope NotInOrganization -FromScope InOrganization -MessageTypeMatches AutoForward -RejectMessageEnhancedStatusCode 5.7.1 -RejectMessageReasonText $rejectMessageText
+    Write-Output "$externalTransportRuleName not found, creating Rule" -ForegroundColor Yellow
+    New-TransportRule -name $externalTransportRuleName -Priority 0 -SentToScope NotInOrganization -FromScope InOrganization -MessageTypeMatches AutoForward -RejectMessageEnhancedStatusCode 5.7.1 -RejectMessageReasonText $rejectMessageText
 }
     else {
-        Write-Output "$externalTransportRuleName exist"
+        Write-Output "$externalTransportRuleName exist" -ForegroundColor Green
     }
