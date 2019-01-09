@@ -34,9 +34,8 @@ $CreateEXOPSSession = (Get-ChildItem -Path $env:userprofile -Filter CreateExoPSS
 . "$CreateEXOPSSession\CreateExoPSSession.ps1"
 
 # Get Admin credentials and sign in to EXOnline with Modern Auth - MFA
-Write-Host "Connecting to Office 365 Session with Modern Auth - MFA"
-$AdminCred = Read-Host -Prompt "Specify Global Administrator Username"
-Connect-EXOPSSession -UserPrincipalName $AdminCred 
+Write-Host "Connecting to Office 365 Session w/ MFA"
+Connect-EXOPSSession
 }
 
 Connect-EXOnline
