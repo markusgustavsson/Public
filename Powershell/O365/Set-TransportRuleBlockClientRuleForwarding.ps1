@@ -27,7 +27,8 @@ Creates a rule to block auto-forwarding rules from inside organization to extern
 .EXAMPLE
 Set-TransportRuleBlockClientRuleForwarding.ps1
 #>
-$ErrorActionPreference= 'silentlycontinue'
+
+#$ErrorActionPreference = 'silentlycontinue'
 Import-Module $PSScriptRoot\AnyBox\0.3.3\AnyBox.psm1
 
 ###################################
