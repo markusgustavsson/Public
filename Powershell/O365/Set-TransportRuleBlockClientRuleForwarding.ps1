@@ -28,6 +28,10 @@ Creates a rule to block auto-forwarding rules from inside organization to extern
 Set-TransportRuleBlockClientRuleForwarding.ps1
 #>
 
+###################################
+#         Script Settings         #
+###################################
+
 #$ErrorActionPreference = 'silentlycontinue'
 Import-Module $PSScriptRoot\AnyBox\0.3.3\AnyBox.psm1
 
@@ -35,12 +39,10 @@ Import-Module $PSScriptRoot\AnyBox\0.3.3\AnyBox.psm1
 #     CONNECT EXCHANGE ONLINE     #
 ###################################
 
-#Set to $True if your global admin requires MFA
-
-#$2FA = [System.Windows.Forms.MessageBox]::Show("Does your Global Admin require MFA?" , "MFA" , 4)
-
+# Promt to verify if Global Admin requires MFA
 $2FA = Show-AnyBox -Icon 'Question' -Title 'MFA' -Message 'Does your Global Admin require MFA?' -Buttons 'No', 'Yes' -MinWidth 300
-###################################
+
+# Connect to Exchange Online with provided credentials
 If ($2FA['No'])
 {
     # $credential = Get-Credential -Message "Please enter your Office 365 credentials"
@@ -58,7 +60,7 @@ If ($2FA['No'])
     Import-Module AzureAD
     $null = Connect-AzureAD -Credential $credential
     $exchangeSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/"  -Authentication "Basic" -AllowRedirection -Credential $credential
-    Import-PSSession $exchangeSession -AllowClobber
+    $null = Import-PSSession $exchangeSession -AllowClobber
 }
 Else
 {
@@ -93,3 +95,10 @@ if (!$externalForwardRule) {
     else {
         $null = Show-AnyBox -Title 'Confirmation' -Message "$externalTransportRuleName already exist" -Buttons 'OK' -MinWidth 300
     }
+
+###################################
+#             Cleanup             #
+###################################
+    
+Get-PSSession | Remove-PSSession
+Remove-Module AnyBox
