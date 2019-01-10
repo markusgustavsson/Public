@@ -12,6 +12,8 @@ Author: ChrisC-NZ
 Date: 07/01/2019
 
 TODO:
+Clear up errors
+Tidy up script
 
 #>
 
@@ -25,20 +27,35 @@ Creates a rule to block auto-forwarding rules from inside organization to extern
 .EXAMPLE
 Set-TransportRuleBlockClientRuleForwarding.ps1
 #>
+$ErrorActionPreference= 'silentlycontinue'
+Import-Module $PSScriptRoot\AnyBox\0.3.3\AnyBox.psm1
 
 ###################################
 #     CONNECT EXCHANGE ONLINE     #
 ###################################
 
 #Set to $True if your global admin requires MFA
-$2FA = [System.Windows.Forms.MessageBox]::Show("Does your Global Admin require MFA?" , "MFA" , 4)
 
+#$2FA = [System.Windows.Forms.MessageBox]::Show("Does your Global Admin require MFA?" , "MFA" , 4)
+
+$2FA = Show-AnyBox -Icon 'Question' -Title 'MFA' -Message 'Does your Global Admin require MFA?' -Buttons 'No', 'Yes' -MinWidth 300
 ###################################
-If ($2FA -eq "No")
+If ($2FA['No'])
 {
-    $credential = Get-Credential -Message "Please enter your Office 365 credentials"
+    # $credential = Get-Credential -Message "Please enter your Office 365 credentials"
+    
+  $Creds = Show-AnyBox -Buttons 'Cancel', 'Login' -CancelButton 'Cancel' -Prompt @(
+        (New-AnyBoxPrompt -InputType 'Text' -Message 'User Name:' -ValidateNotEmpty),
+        (New-AnyBoxPrompt -InputType 'Password' -Message 'Password:' -ValidateNotEmpty)
+      )
+    if ($Creds['Cancel'])
+    {
+        Exit
+    }
+    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($Creds['Input_0','Input_1'])
+
     Import-Module AzureAD
-    Connect-AzureAD -Credential $credential
+    $null = Connect-AzureAD -Credential $credential
     $exchangeSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/"  -Authentication "Basic" -AllowRedirection -Credential $credential
     Import-PSSession $exchangeSession -AllowClobber
 }
@@ -69,9 +86,9 @@ $externalForwardRule = Get-TransportRule | Where-Object {$_.Identity -contains $
 
 # Create transport rule if it does not exist with matching name
 if (!$externalForwardRule) {
-    Write-Output "$externalTransportRuleName not found, creating Rule" -ForegroundColor Yellow
+    Write-Host "$externalTransportRuleName not found, creating Rule" -ForegroundColor Yello
     New-TransportRule -name $externalTransportRuleName -Priority 0 -SentToScope NotInOrganization -FromScope InOrganization -MessageTypeMatches AutoForward -RejectMessageEnhancedStatusCode 5.7.1 -RejectMessageReasonText $rejectMessageText
 }
     else {
-        Write-Output "$externalTransportRuleName exist" -ForegroundColor Green
+        $null = Show-AnyBox -Title 'Confirmation' -Message "$externalTransportRuleName already exist" -Buttons 'OK' -MinWidth 300
     }
