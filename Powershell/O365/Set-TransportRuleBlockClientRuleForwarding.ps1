@@ -45,8 +45,6 @@ $2FA = Show-AnyBox -Icon 'Question' -Title 'MFA' -Message 'Does your Global Admi
 # Connect to Exchange Online with provided credentials
 If ($2FA['No'])
 {
-    # $credential = Get-Credential -Message "Please enter your Office 365 credentials"
-    
   $Creds = Show-AnyBox -Buttons 'Cancel', 'Login' -CancelButton 'Cancel' -Prompt @(
         (New-AnyBoxPrompt -InputType 'Text' -Message 'User Name:' -ValidateNotEmpty),
         (New-AnyBoxPrompt -InputType 'Password' -Message 'Password:' -ValidateNotEmpty)
@@ -55,8 +53,8 @@ If ($2FA['No'])
     {
         Exit
     }
-    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($Creds['Input_0','Input_1'])
 
+    $credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($Creds['Input_0','Input_1'])
     Import-Module AzureAD
     $null = Connect-AzureAD -Credential $credential
     $exchangeSession = New-PSSession -ConfigurationName Microsoft.Exchange -ConnectionUri "https://outlook.office365.com/powershell-liveid/"  -Authentication "Basic" -AllowRedirection -Credential $credential
