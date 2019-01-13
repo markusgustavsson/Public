@@ -33,6 +33,10 @@ Set-TransportRuleBlockClientRuleForwarding.ps1
 ###################################
 
 #$ErrorActionPreference = 'silentlycontinue'
+
+#Remove all existing Powershell sessions 
+Get-PSSession | Remove-PSSession 
+
 Import-Module $PSScriptRoot\AnyBox\0.3.3\AnyBox.psm1
 
 ###################################
