@@ -48,7 +48,7 @@ If ($2FA['No'])
   $Creds = Show-AnyBox -Buttons 'Cancel', 'Login' -CancelButton 'Cancel' -Prompt @(
         (New-AnyBoxPrompt -InputType 'Text' -Message 'User Name:' -ValidateNotEmpty),
         (New-AnyBoxPrompt -InputType 'Password' -Message 'Password:' -ValidateNotEmpty)
-      )
+    )
     if ($Creds['Cancel'])
     {
         Exit
@@ -63,15 +63,18 @@ If ($2FA['No'])
 Else
 {
     $Modules = ((Get-ChildItem -Path $($env:LOCALAPPDATA + "\Apps\2.0\") -Filter CreateExoPSSession.ps1 -Recurse).FullName | Where-Object{ $_ -notmatch "_none_" } | Select-Object -First 1)
-    If ($Modules -eq $Null)
+    if ($Modules -eq $Null)
 		{
-            Write-Host "Exchange Online MFA Module was not found, please make sure you have downloaded and installed it from your tenant https://docs.microsoft.com/en-us/powershell/exchange/exchange-online/connect-to-exchange-online-powershell/mfa-connect-to-exchange-online-powershell?view=exchange-ps" -ForegroundColor Red
+            $null = Show-AnyBox -Buttons 'OK' -MinWidth 200 -Prompt @(
+                (New-AnyBoxPrompt -InputType 'Link' -Message 'Connect to Exchange Online PowerShell using multi-factor authentication' -DefaultValue 'https://docs.microsoft.com/en-us/powershell/exchange/exchange-online/connect-to-exchange-online-powershell/mfa-connect-to-exchange-online-powershell?view=exchange-ps')
+                )
             Exit
-		}
+        }
     foreach ($Module in $Modules)
         {
-           Import-Module "$Module"
-        }
+            Import-Module "$Module"
+        }        
+    
     Write-Host "Credential prompt to connect to Exchange Online" -ForegroundColor Yellow
     #Connect to Exchange Online w/ MFA
     Connect-EXOPSSession
