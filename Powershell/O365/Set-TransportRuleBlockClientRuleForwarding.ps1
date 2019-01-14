@@ -37,7 +37,7 @@ Set-TransportRuleBlockClientRuleForwarding.ps1
 #Remove all existing Powershell sessions 
 Get-PSSession | Remove-PSSession 
 
-Import-Module $PSScriptRoot\AnyBox\0.3.3\AnyBox.psm1
+Import-Module $PSScriptRoot\AnyBox\0.3.3\AnyBox.psd1
 
 ###################################
 #     CONNECT EXCHANGE ONLINE     #
